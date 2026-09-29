@@ -149,3 +149,7 @@ AUTH_USER_MODEL = 'users.User'
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Email settings
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'office@cageetanjali.com')
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')

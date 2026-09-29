@@ -8,9 +8,10 @@ def send_notification_email(to_email, subject, html_content):
         print(f"[Email Stub] To: {to_email} | Subject: {subject} | Content: {html_content}")
         return
         
+    from_address = getattr(settings, 'DEFAULT_FROM_EMAIL', 'office@cageetanjali.com')
     try:
         r = resend.Emails.send({
-            "from": "onboarding@resend.dev", # Replace with verified domain in production
+            "from": from_address,
             "to": to_email,
             "subject": subject,
             "html": html_content
