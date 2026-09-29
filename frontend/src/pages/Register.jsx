@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import PrivacyPolicyModal from '../components/PrivacyPolicyModal'
 
 export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
+  const [privacyAccepted, setPrivacyAccepted] = useState(false)
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -14,28 +17,37 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault()
+    if (!privacyAccepted) {
+      setError('You must accept the Data Privacy Policy and Storage Consent to proceed.')
+      return
+    }
+
     setLoading(true)
     setError(null)
     
-    // Supabase Auth
-    const { data, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name,
-          mobile_no: mobile,
-          role: 'client'
+    try {
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            mobile_no: mobile,
+            role: 'client'
+          }
         }
-      }
-    })
+      })
 
-    if (authError) {
-      setError(authError.message)
-    } else {
-      setSuccess(true)
+      if (authError) {
+        setError(authError.message)
+      } else {
+        setSuccess(true)
+      }
+    } catch (err) {
+      setError(err.message || 'Unable to connect to authentication server. Please verify network or Supabase settings.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   if (success) {
@@ -56,7 +68,7 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center p-4 py-12">
       <div className="bg-[var(--color-surface)] p-8 rounded-lg shadow-lg border border-[var(--color-border)] w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Register</h1>
+          <h1 className="text-3xl font-bold mb-2 font-heading">Register</h1>
           <p className="text-[var(--color-text-muted)]">Create your client account</p>
         </div>
         
@@ -112,16 +124,35 @@ export default function Register() {
           </div>
           
           <div className="pt-2">
-            <label className="flex items-start text-sm text-[var(--color-text-muted)]">
-              <input type="checkbox" required className="mt-1 mr-2" />
-              <span>I accept the Data Privacy Policy and Storage Consent.</span>
-            </label>
+            <div className="flex items-start text-sm text-[var(--color-text-muted)] gap-2">
+              <input 
+                type="checkbox" 
+                id="privacy-consent"
+                checked={privacyAccepted}
+                onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                required 
+                className="mt-1 cursor-pointer accent-[var(--color-primary)]" 
+              />
+              <label htmlFor="privacy-consent" className="cursor-pointer select-none">
+                I accept the{' '}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setIsPrivacyModalOpen(true)
+                  }}
+                  className="text-[var(--color-primary)] font-semibold underline hover:text-[var(--color-accent)] transition-colors cursor-pointer"
+                >
+                  Data Privacy Policy and Storage Consent
+                </button>.
+              </label>
+            </div>
           </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-[var(--color-primary)] text-white py-2 px-4 rounded hover:bg-opacity-90 transition-opacity font-medium mt-4 disabled:opacity-50"
+            className="w-full bg-[var(--color-primary)] text-white py-2 px-4 rounded hover:bg-opacity-90 transition-opacity font-medium mt-4 disabled:opacity-50 cursor-pointer"
           >
             {loading ? 'Registering...' : 'Register'}
           </button>
@@ -134,6 +165,14 @@ export default function Register() {
           </Link>
         </div>
       </div>
+
+      {/* Privacy Policy Modal */}
+      <PrivacyPolicyModal 
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+        onAccept={() => setPrivacyAccepted(true)}
+      />
     </div>
   )
 }
+

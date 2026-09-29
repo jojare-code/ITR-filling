@@ -2,22 +2,28 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'corsheaders',
-    'users',
-    'plans',
-    'orders',
-]
+def api_root_view(request):
+    return JsonResponse({
+        "status": "online",
+        "name": "ITR Filing Management API",
+        "message": "Django Backend API server is running successfully.",
+        "endpoints": {
+            "admin": "/admin/",
+            "users": "/api/users/",
+            "plans": "/api/plans/",
+            "orders": "/api/orders/",
+            "documents": "/api/documents/",
+            "queries": "/api/queries/",
+            "deliveries": "/api/deliveries/",
+            "feedback": "/api/feedback/",
+            "audit": "/api/audit/"
+        }
+    })
 
 urlpatterns = [
+    path('', api_root_view, name='api-root'),
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
     path('api/plans/', include('plans.urls')),
@@ -31,3 +37,4 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

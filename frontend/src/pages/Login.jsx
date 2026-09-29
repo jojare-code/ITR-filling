@@ -14,17 +14,22 @@ export default function Login() {
     setLoading(true)
     setError(null)
     
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-    if (error) {
-      setError(error.message)
-    } else {
-      navigate('/dashboard')
+      if (error) {
+        setError(error.message)
+      } else {
+        navigate('/dashboard')
+      }
+    } catch (err) {
+      setError(err.message || 'Unable to connect to Supabase authentication. Please verify network or Supabase config.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (

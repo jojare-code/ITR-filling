@@ -18,10 +18,17 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setLoading(false)
-    })
+    supabase.auth.getSession()
+      .then(({ data }) => {
+        setSession(data?.session || null)
+      })
+      .catch((err) => {
+        console.error("Failed to get Supabase auth session:", err)
+        setSession(null)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
 
     const {
       data: { subscription },
@@ -29,7 +36,7 @@ function App() {
       setSession(session)
     })
 
-    return () => subscription.unsubscribe()
+    return () => subscription?.unsubscribe?.()
   }, [])
 
   const [activeOrder, setActiveOrder] = useState(null)
